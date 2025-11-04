@@ -18,7 +18,10 @@ import {
   Save,
   X,
   Plus,
-  Trash2
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  GripVertical
 } from 'lucide-react';
 
 const ParentDashboard = ({ 
@@ -90,6 +93,48 @@ const ParentDashboard = ({
   const resetAllSteps = () => {
     const resetSteps = steps.map(step => ({ ...step, completed: false, elapsedTimes: [] }));
     onUpdateSteps(resetSteps);
+  };
+
+  const moveStepUp = (index) => {
+    if (index === 0) return;
+    const newSteps = [...steps];
+    [newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]];
+    onUpdateSteps(newSteps);
+  };
+
+  const moveStepDown = (index) => {
+    if (index === steps.length - 1) return;
+    const newSteps = [...steps];
+    [newSteps[index], newSteps[index + 1]] = [newSteps[index + 1], newSteps[index]];
+    onUpdateSteps(newSteps);
+  };
+
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData('text/plain', index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    
+    if (dragIndex === dropIndex) return;
+    
+    const newSteps = [...steps];
+    const draggedStep = newSteps[dragIndex];
+    
+    // Remove the dragged step
+    newSteps.splice(dragIndex, 1);
+    
+    // Insert at new position
+    newSteps.splice(dropIndex, 0, draggedStep);
+    
+    onUpdateSteps(newSteps);
   };
 
   return (
@@ -226,12 +271,22 @@ const ParentDashboard = ({
 
           <div className="space-y-4">
             {steps.map((step, index) => (
-              <Card key={step.id}>
+              <Card 
+                key={step.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                className="cursor-move hover:shadow-md transition-shadow"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="text-lg font-bold text-gray-500">
-                        {index + 1}
+                      <div className="flex flex-col items-center space-y-1">
+                        <GripVertical className="w-5 h-5 text-gray-400" />
+                        <div className="text-lg font-bold text-gray-500">
+                          {index + 1}
+                        </div>
                       </div>
                       
                       <img
@@ -271,6 +326,28 @@ const ParentDashboard = ({
                     </div>
 
                     <div className="flex items-center space-x-2">
+                      {/* Reordering buttons */}
+                      <div className="flex flex-col space-y-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => moveStepUp(index)}
+                          disabled={index === 0}
+                          className="h-6 w-6 p-0"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => moveStepDown(index)}
+                          disabled={index === steps.length - 1}
+                          className="h-6 w-6 p-0"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </Button>
+                      </div>
+
                       {step.completed && (
                         <Badge variant="secondary" className="bg-green-100 text-green-800">
                           ✓ Erledigt
