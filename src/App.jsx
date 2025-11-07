@@ -22,48 +22,52 @@ import combHairImg from './assets/illustrations/comb_hair.png';
 import makeBedImg from './assets/illustrations/make_bed.png';
 import bathroomVisitImg from './assets/illustrations/bathroom_visit.png';
 
+// LocalStorage utility functions
+const saveToLocalStorage = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+};
 
+const loadFromLocalStorage = (key, defaultValue) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return defaultValue;
+  }
+};
 
 const defaultRoutineSteps = [
-  { id: 1, title: 'Aufwachen', duration: 300, image: wakeUpImg, completed: false },
-  { id: 11, title: 'Toilettengang', duration: 120, image: bathroomVisitImg, completed: false },
-  { id: 2, title: 'Gesicht waschen', duration: 180, image: washFaceImg, completed: false },
-  { id: 3, title: 'Zähne putzen', duration: 120, image: brushTeethImg, completed: false },
-  { id: 4, title: 'Haare kämmen', duration: 120, image: combHairImg, completed: false },
-  { id: 5, title: 'Anziehen', duration: 300, image: getDressedImg, completed: false },
-  { id: 6, title: 'Bett machen', duration: 180, image: makeBedImg, completed: false },
-  { id: 7, title: 'Frühstück essen', duration: 900, image: eatBreakfastImg, completed: false },
-  { id: 8, title: 'Rucksack packen', duration: 240, image: packBackpackImg, completed: false },
-  { id: 9, title: 'Schuhe anziehen', duration: 180, image: putOnShoesImg, completed: false },
-  { id: 10, title: 'Verabschieden', duration: 60, image: sayGoodbyeImg, completed: false }
+  { id: 1, title: 'Aufwachen', duration: 300, image: wakeUpImg, completed: false, elapsedTimes: [] },
+  { id: 11, title: 'Toilettengang', duration: 120, image: bathroomVisitImg, completed: false, elapsedTimes: [] },
+  { id: 2, title: 'Gesicht waschen', duration: 180, image: washFaceImg, completed: false, elapsedTimes: [] },
+  { id: 3, title: 'Zähne putzen', duration: 120, image: brushTeethImg, completed: false, elapsedTimes: [] },
+  { id: 4, title: 'Haare kämmen', duration: 120, image: combHairImg, completed: false, elapsedTimes: [] },
+  { id: 5, title: 'Anziehen', duration: 300, image: getDressedImg, completed: false, elapsedTimes: [] },
+  { id: 6, title: 'Bett machen', duration: 180, image: makeBedImg, completed: false, elapsedTimes: [] },
+  { id: 7, title: 'Frühstück essen', duration: 900, image: eatBreakfastImg, completed: false, elapsedTimes: [] },
+  { id: 8, title: 'Rucksack packen', duration: 240, image: packBackpackImg, completed: false, elapsedTimes: [] },
+  { id: 9, title: 'Schuhe anziehen', duration: 180, image: putOnShoesImg, completed: false, elapsedTimes: [] },
+  { id: 10, title: 'Verabschieden', duration: 60, image: sayGoodbyeImg, completed: false, elapsedTimes: [] }
 ];
 
 function AppContent() {
   const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);
-  const [isOnboarded, setIsOnboarded] = useState(false);
-  const [childName, setChildName] = useState('');
-  const [wakeUpTime, setWakeUpTime] = useState('07:00');
-  const [language, setLanguage] = useState('de');
-  const [routineSteps, setRoutineSteps] = useState(defaultRoutineSteps);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [points, setPoints] = useState(0);
-  const [stickers, setStickers] = useState([]);
+  const [isOnboarded, setIsOnboarded] = useState(loadFromLocalStorage('onboardingComplete', false));
+  const [childName, setChildName] = useState(loadFromLocalStorage('childName', ''));
+  const [wakeUpTime, setWakeUpTime] = useState(loadFromLocalStorage('wakeUpTime', '07:00'));
+  const [language, setLanguage] = useState(loadFromLocalStorage('language', 'de'));
+  const [routineSteps, setRoutineSteps] = useState(loadFromLocalStorage('routineSteps', defaultRoutineSteps));
+  const [currentStep, setCurrentStep] = useState(loadFromLocalStorage('currentStep', 0));
+  const [points, setPoints] = useState(loadFromLocalStorage('points', 0));
+  const [stickers, setStickers] = useState(loadFromLocalStorage('stickers', []));
 
   useEffect(() => {
-    // Check if user has completed onboarding
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    const savedChildName = localStorage.getItem('childName');
-    const savedWakeUpTime = localStorage.getItem('wakeUpTime');
-    const savedLanguage = localStorage.getItem('language');
-
-    if (onboardingComplete === 'true') {
-      setIsOnboarded(true);
-      setChildName(savedChildName || '');
-      setWakeUpTime(savedWakeUpTime || '07:00');
-      setLanguage(savedLanguage || 'de');
-    }
-
     // Hide splash screen after 2 seconds
     const timer = setTimeout(() => {
       setShowSplash(false);
@@ -76,11 +80,13 @@ function AppContent() {
     setChildName(name);
     setWakeUpTime(time);
     setLanguage(lang);
-    localStorage.setItem("onboardingComplete", "true");
-    localStorage.setItem("childName", name);
-    localStorage.setItem("wakeUpTime", time);
-    localStorage.setItem("language", lang);
     setIsOnboarded(true);
+    
+    // Save to localStorage
+    saveToLocalStorage("onboardingComplete", true);
+    saveToLocalStorage("childName", name);
+    saveToLocalStorage("wakeUpTime", time);
+    saveToLocalStorage("language", lang);
     
     // Use navigate to redirect to routine page
     setTimeout(() => {
@@ -90,30 +96,35 @@ function AppContent() {
 
   const updateRoutineSteps = (newSteps) => {
     setRoutineSteps(newSteps);
+    saveToLocalStorage('routineSteps', newSteps);
   };
 
   const completeStep = (stepId, elapsedTime) => {
-    setRoutineSteps(prev => 
-      prev.map(step => 
-        step.id === stepId 
-          ? { ...step, completed: true, elapsedTimes: [...(step.elapsedTimes || []), elapsedTime] } 
-          : step
-      )
-    );
-    
-    // Award points
-    setPoints(prev => prev + 10);
-    
-    // Check if all steps completed for sticker reward
     const updatedSteps = routineSteps.map(step => 
       step.id === stepId 
         ? { ...step, completed: true, elapsedTimes: [...(step.elapsedTimes || []), elapsedTime] } 
         : step
     );
     
+    setRoutineSteps(updatedSteps);
+    saveToLocalStorage('routineSteps', updatedSteps);
+    
+    // Award points
+    const newPoints = points + 10;
+    setPoints(newPoints);
+    saveToLocalStorage('points', newPoints);
+    
+    // Check if all steps completed for sticker reward
     if (updatedSteps.every(step => step.completed)) {
-      setStickers(prev => [...prev, Date.now()]);
+      const newStickers = [...stickers, Date.now()];
+      setStickers(newStickers);
+      saveToLocalStorage('stickers', newStickers);
     }
+  };
+
+  const updateCurrentStep = (stepIndex) => {
+    setCurrentStep(stepIndex);
+    saveToLocalStorage('currentStep', stepIndex);
   };
 
   if (showSplash) {
@@ -146,7 +157,7 @@ function AppContent() {
               steps={routineSteps}
               childName={childName}
               currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
+              setCurrentStep={updateCurrentStep}
               onCompleteStep={completeStep}
               points={points}
               stickers={stickers}
