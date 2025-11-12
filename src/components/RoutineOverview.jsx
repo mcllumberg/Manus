@@ -22,7 +22,8 @@ const RoutineOverview = ({
   childName, 
   currentStep, 
   setCurrentStep, 
-  onCompleteStep, 
+  onCompleteStep,
+  onResetStep,
   points, 
   stickers 
 }) => {
@@ -79,6 +80,17 @@ const RoutineOverview = ({
         setActiveStepIndex(nextUncompletedIndex);
         setCurrentStep(nextUncompletedIndex);
       }
+    }
+  };
+
+  const handleResetStep = () => {
+    const currentStepData = steps[activeStepIndex];
+    if (currentStepData.completed) {
+      // Call a new function to reset the step
+      onResetStep(currentStepData.id);
+      setTimeLeft(0);
+      setStartTime(null);
+      setIsRunning(false);
     }
   };
 
@@ -264,6 +276,18 @@ const RoutineOverview = ({
                         Reset
                       </Button>
                     </>
+                  )}
+                  
+                  {currentStepData.completed && (
+                    <Button
+                      variant="outline"
+                      onClick={handleResetStep}
+                      size="lg"
+                      className="h-12 px-6"
+                    >
+                      <RotateCcw className="w-5 h-5 mr-2" />
+                      Zurücksetzen
+                    </Button>
                   )}
                   
                   <Button

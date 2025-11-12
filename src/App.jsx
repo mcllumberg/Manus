@@ -127,6 +127,39 @@ function AppContent() {
     saveToLocalStorage('currentStep', stepIndex);
   };
 
+  const resetStep = (stepId) => {
+    const updatedSteps = routineSteps.map(step => 
+      step.id === stepId 
+        ? { ...step, completed: false, elapsedTimes: step.elapsedTimes || [] } 
+        : step
+    );
+    
+    setRoutineSteps(updatedSteps);
+    saveToLocalStorage('routineSteps', updatedSteps);
+  };
+
+  const resetOnboarding = () => {
+    // Clear all onboarding and routine data
+    setIsOnboarded(false);
+    setChildName('');
+    setWakeUpTime('07:00');
+    setLanguage('de');
+    setRoutineSteps(defaultRoutineSteps);
+    setCurrentStep(0);
+    setPoints(0);
+    setStickers([]);
+    
+    // Clear localStorage
+    saveToLocalStorage('onboardingComplete', false);
+    saveToLocalStorage('childName', '');
+    saveToLocalStorage('wakeUpTime', '07:00');
+    saveToLocalStorage('language', 'de');
+    saveToLocalStorage('routineSteps', defaultRoutineSteps);
+    saveToLocalStorage('currentStep', 0);
+    saveToLocalStorage('points', 0);
+    saveToLocalStorage('stickers', []);
+  };
+
   if (showSplash) {
     return <SplashScreen />;
   }
@@ -159,6 +192,7 @@ function AppContent() {
               currentStep={currentStep}
               setCurrentStep={updateCurrentStep}
               onCompleteStep={completeStep}
+              onResetStep={resetStep}
               points={points}
               stickers={stickers}
             />
@@ -183,6 +217,7 @@ function AppContent() {
               wakeUpTime={wakeUpTime}
               points={points}
               stickers={stickers}
+              onResetOnboarding={resetOnboarding}
             />
           } 
         />
