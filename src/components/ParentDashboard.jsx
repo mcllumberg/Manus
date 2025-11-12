@@ -21,7 +21,8 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
-  GripVertical
+  GripVertical,
+  User
 } from 'lucide-react';
 
 const ParentDashboard = ({ 
@@ -30,7 +31,8 @@ const ParentDashboard = ({
   childName, 
   wakeUpTime, 
   points, 
-  stickers 
+  stickers,
+  onResetOnboarding 
 }) => {
   const navigate = useNavigate();
   const [editingStep, setEditingStep] = useState(null);
@@ -166,7 +168,7 @@ const ParentDashboard = ({
       </div>
 
       <Tabs defaultValue="overview" className="max-w-4xl mx-auto">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <BarChart3 className="w-4 h-4" />
             <span>Übersicht</span>
@@ -178,6 +180,10 @@ const ParentDashboard = ({
           <TabsTrigger value="stats" className="flex items-center space-x-2">
             <Trophy className="w-4 h-4" />
             <span>Statistiken</span>
+          </TabsTrigger>
+          <TabsTrigger value="profile" className="flex items-center space-x-2">
+            <User className="w-4 h-4" />
+            <span>Profil</span>
           </TabsTrigger>
         </TabsList>
 
@@ -257,7 +263,33 @@ const ParentDashboard = ({
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+	        </TabsContent>
+
+	        {/* Profile Tab */}
+	        <TabsContent value="profile" className="space-y-6">
+	          <Card>
+	            <CardHeader>
+	              <CardTitle>Onboarding & Daten</CardTitle>
+	            </CardHeader>
+	            <CardContent className="space-y-4">
+	              <p className="text-sm text-gray-600">
+	                Klicke hier, um alle gespeicherten Daten (Name, Weckzeit, Routine-Fortschritt, Punkte, Sticker) zu löschen und den Onboarding-Prozess neu zu starten.
+	              </p>
+	              <Button 
+	                onClick={() => {
+	                  if (window.confirm('Bist du sicher, dass du das Onboarding zurücksetzen und alle Daten löschen möchtest?')) {
+	                    onResetOnboarding();
+	                    navigate('/onboarding');
+	                  }
+	                }}
+	                variant="destructive"
+	                className="w-full"
+	              >
+	                Onboarding zurücksetzen
+	              </Button>
+	            </CardContent>
+	          </Card>
+	        </TabsContent>
 
         {/* Steps Management Tab */}
         <TabsContent value="steps" className="space-y-6">
@@ -483,6 +515,52 @@ const ParentDashboard = ({
                     </div>
                   )
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Profile Tab */}
+        <TabsContent value="profile" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil-Einstellungen</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-semibold">Aktuelles Profil</Label>
+                  <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">Name:</span>
+                      <span className="font-bold">{childName}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Aufstehzeit:</span>
+                      <span className="font-bold">{wakeUpTime}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <Label className="text-base font-semibold text-red-600">Profil zurücksetzen</Label>
+                  <p className="text-sm text-gray-600 mt-1 mb-4">
+                    Hiermit werden alle Daten gelöscht und Sie können das Onboarding erneut durchführen.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      if (window.confirm('Sind Sie sicher, dass Sie alle Daten löschen und das Onboarding wiederholen möchten?')) {
+                        onResetOnboarding();
+                        navigate('/onboarding');
+                      }
+                    }}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Onboarding wiederholen
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
